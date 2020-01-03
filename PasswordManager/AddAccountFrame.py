@@ -164,3 +164,32 @@ class AddAccountFrame(QWidget):
     def getPassword(self):
         return self.password.getDecrypted()
 #---------------------------------------------------------------------------------------
+
+class GuiPasswordWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(150,150,150,100)
+        label = QLabel("Enter Password")
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
+
+        self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
+        self.okButton = QPushButton("Ok")
+        self.okButton.clicked.connect(lambda x : self.enter())
+        self.password.returnPressed.connect(self.okButton.click)
+        layout = QGridLayout()
+        layout.addWidget(label,0,0,QtCore.Qt.AlignCenter)
+        layout.addWidget(self.password,1,0,QtCore.Qt.AlignTop)
+        layout.addWidget(self.okButton,2,0,QtCore.Qt.AlignTop)
+        self.setLayout(layout)
+        center(self)
+        self.show()
+
+#---------------------------------------------------------------------------------------
+    def getPassword(self):
+        return self.password.text()
+#---------------------------------------------------------------------------------------
+    def enter(self):
+        self.close()

@@ -17,14 +17,18 @@ class AccountManager:
                 continue
             if not isinstance(row,list) or not isinstance(row,tuple):
                 row = row.split(",")
+                row = list(filter(lambda x: True if len(x) > 0 else False,row))
 
             correctValue = 4
-            if len(row) != correctValue:
+            if len(row) > correctValue:
                 print(f"Account at row {count} could not be added added")
                 print(f"Amount of parameters wrong")
                 size = len(row)
                 print(f"Should be {correctValue} is {size}")
                 continue
+
+            # adding empty space for avoiding index range error
+            [row.append("") for x in range(0,4-len(row))]
             acc = Account(row[0],row[1],row[2],row[3])
             self.accountSet.add(acc)
         size = len(self.accountSet)

@@ -132,6 +132,7 @@ class FileManager:
 #----------------------------------------------------------------------------------------------------------------
     def getEncryptedLine(self,acc):
         rv = ""
+        print(acc)
         for value in acc.getAsStrCsv().split(","):
             if len(value) > 0:
                 value = self.cryptoManager.encrypt(value)

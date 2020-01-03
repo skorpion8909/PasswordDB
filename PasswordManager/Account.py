@@ -85,6 +85,9 @@ class Account:
         return hash(hashValue)
 #----------------------------------------------------------------------------------------------------------------
     def __eq__(self, other):
+        if other == None:
+            return False
+
         if self.name.getDecrypted().__hash__() == other.name.getDecrypted().__hash__():
             return True
         else:

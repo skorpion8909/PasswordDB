@@ -11,7 +11,7 @@ from PasswordManager.CryptoManager import CryptoManager
 from PasswordManager.FileManager import FileManager
 from PasswordManager.Account import Fields, Account, getFieldsList
 from PasswordManager.AccountManager import AccountManager
-from PasswordManager.AddAccountFrame import AddAccountFrame
+from PasswordManager.AddAccountFrame import AddAccountFrame,GuiPasswordWindow
 from PasswordManager.LoginFlags import LoginFlags
 from PyQt5.QtWidgets import QApplication
 import atexit
@@ -44,6 +44,9 @@ class PasswordDB:
             # pw = getpass("Enter password: ")
             print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
             self.startFullInit(pw, pathToDbFile)
+        elif flag == LoginFlags.GUI:
+            pw = getPasswordFromGui()
+            self.startFullInit(pw, pathToDbFile)
         elif fullInit and password != None:
             self.startFullInit(password, pathToDbFile)
 #----------------------------------------------------------------------------------------------------------------
@@ -70,7 +73,10 @@ class PasswordDB:
         return self.accountManager.getSetAccounts()
 #----------------------------------------------------------------------------------------------------------------
     def getAccount(self, accountName):
-        return self.accountManager.getAccountByName(accountName)
+        acc = self.accountManager.getAccountByName(accountName)
+        if acc == None:
+            print(f"Nie znaleziono {accountName}")
+        return acc
 #----------------------------------------------------------------------------------------------------------------
     def getDbFileLocation(self):
         return self.fileManager.getFileFullPath()
@@ -87,7 +93,7 @@ class PasswordDB:
     def closeDB(self):
         self.fileManager.closeFile()
 #----------------------------------------------------------------------------------------------------------------
-def openAddAccountGUI(accName = None):
+def openAddAccountGUI(accName = ""):
     app = QApplication.instance()
 
     if app is None:
@@ -100,3 +106,15 @@ def openAddAccountGUI(accName = None):
         app.exec()
     return addAccFrame
 #----------------------------------------------------------------------------------------------------------------
+
+def getPasswordFromGui():
+    app = QApplication(sys.argv)
+    if app is None:
+        gui = GuiPasswordWindow()
+        app.exec()
+        app.exit()
+    else:
+        gui = GuiPasswordWindow()
+        app.exec()
+
+    return gui.getPassword()
