@@ -71,7 +71,7 @@ print(getFieldsList())
 <span id="anchor-2"></span>Setup
 --------------------------------
 
-1.   Clone github repository(passwordDbMain folder).
+1.   Clone github repository(PasswordManager folder).
 2.   Pip install main encryption lib <https://pypi.org/project/cryptography/>.
 3.   Copy cloned folder to your python distribution site-packages folder (Windows example C:\Users\Username\AppData\Local\Programs\Python\Python37\Lib\site-packages)
 4.   Use in your scripts as in provided example

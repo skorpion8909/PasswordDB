@@ -14,6 +14,7 @@ from PasswordManager.AccountManager import AccountManager
 from PasswordManager.AddAccountFrame import AddAccountFrame,GuiPasswordWindow
 from PasswordManager.LoginFlags import LoginFlags
 from PyQt5.QtWidgets import QApplication
+from getpass import getpass
 import atexit
 import sys
 from getpass import getpass
@@ -38,12 +39,17 @@ class PasswordDB:
     This is a main class for this module. Only this module should be used directly.
     Rest of classes from this module will not work alone properly.
     """
-    def __init__(self,password=None,pathToDbFile=None,fullInit=True,flag=None):
+    def __init__(self,password=None,pathToDbFile=None,fullInit=True,flag=None,ideEnvironment=False):
         if flag == LoginFlags.CONSOLE:
-            pw = input("Enter password: ")
-            # pw = getpass("Enter password: ")
-            print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-            self.startFullInit(pw, pathToDbFile)
+            if ideEnvironment:
+                # getpass does not work well in some ide
+                pw = input("Enter password: ")
+                # pw = getpass("Enter password: ")
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                self.startFullInit(pw, pathToDbFile)
+            else:
+                pw = getpass("Enter password:")
+                self.startFullInit(pw, pathToDbFile)
         elif flag == LoginFlags.GUI:
             pw = getPasswordFromGui()
             self.startFullInit(pw, pathToDbFile)
@@ -80,6 +86,9 @@ class PasswordDB:
 #----------------------------------------------------------------------------------------------------------------
     def getDbFileLocation(self):
         return self.fileManager.getFileFullPath()
+#----------------------------------------------------------------------------------------------------------------
+    def removeAccount(self,accountName):
+        self.accountManager.removeAccount(accountName)
 #----------------------------------------------------------------------------------------------------------------
     def changeMainPassword(self,password):
         if len(password) == 0:

@@ -15,6 +15,7 @@ class FileManager:
         a file.
     """
     def __init__(self,pathToDbFile,cryptoManager):
+        self.debug = False
         self.initialPath = pathToDbFile
         #init variables
         self.cryptoManager = cryptoManager          # type: CryptoManager
@@ -76,10 +77,9 @@ class FileManager:
         :return directory and file name:
         """
         directory, fileName = split(path)
-        print("/--=")
-        print(directory)
-        print(fileName)
-        print(")_")
+        if self.debug:
+            print(directory,"<-- file directory")
+            print(fileName,"<-- file name")
         return directory, fileName
 #---------------------------------------------------------------------------------------------------------------
     def errorTextFormat(self,userPath, path):
@@ -153,9 +153,7 @@ class FileManager:
         self.dbFile = open(file=pathToFile, mode="w+", encoding="ASCII")
 #----------------------------------------------------------------------------------------------------------------
     def prepareToResave(self,accSet):
-        print(len(self.fileRawContentAsList))
         self.fileRawContentAsList = list(filter(lambda x: Account().setAccountValues(self.decryptLine(x)) not in accSet,self.fileRawContentAsList))
-        print(len(self.fileRawContentAsList))
 #----------------------------------------------------------------------------------------------------------------
     def removeAccountFromFile(self,acc):
         helpSet = set()
@@ -163,9 +161,10 @@ class FileManager:
         self.prepareToResave(helpSet)
         self.emptyDbFile()
         self.resaveDB()
+        print(f"Account {acc} removed.")
 #----------------------------------------------------------------------------------------------------------------
     def resaveDB(self):
-        print("Zapisuje")
+        print("Saving")
         for line in self.fileRawContentAsList:
             print(Account().setAccountValues(self.decryptLine(line)))
         self.dbFile.writelines(self.fileRawContentAsList)

@@ -48,7 +48,7 @@ class AccountManager:
     def addAccount(self,accountObj):
         readBefore = len(self.accountSet)
         if accountObj in self.accountSet:
-            print("Remove")
+            print("Removing old acc with that name and saving a new one")
             self.removeAccount(accountObj)
         self.accountSet.add(accountObj)
 
@@ -70,6 +70,10 @@ class AccountManager:
         print("Accounts resaved")
 #----------------------------------------------------------------------------------------------------------------
     def removeAccount(self,acc):
-        self.accountSet.remove(acc)
-        print(acc,"<---------- to acc")
-        self.fileManager.removeAccountFromFile(acc)
+        if isinstance(acc,str):
+            acc = self.getAccountByName(acc)
+        if acc in self.accountSet:
+            self.accountSet.remove(acc)
+            self.fileManager.removeAccountFromFile(acc)
+        else:
+            print("Account not found")
