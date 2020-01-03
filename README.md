@@ -59,8 +59,8 @@ print(getFieldsList())
 
 #pwDb = PasswordDB(flag=LoginFlags.CONSOLE,ideEnvironment=True)
 # password will be visible in console but it will work.
+# in normal use case getpass will be use by default for input password
 
-# in normal use case getpass will be use by default to input password
 #pwDb = PasswordDB(flag=LoginFlags.GUI)      #<---- will ask for a password from PyQt5 GUI
 ```
 
@@ -86,10 +86,10 @@ print(getFieldsList())
 
 TO-DO list:
 
--    [ ] More tests
--    [ ] Delete account function
+-    [X] More tests
+-    [X] Delete account function
 -    [ ] Change login/password function
--    [ ] Api for console and GUI password entry
+-    [X] Api for console and GUI password entry
 -    [ ] Improve safety by double encryption
 
 <span id="anchor-4"></span>Status
