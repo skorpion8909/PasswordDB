@@ -52,14 +52,15 @@ print(getFieldsList())
 # ['NAME', 'LOGIN', 'PASSWORD1', 'PASSWORD2']
 
 #Flag cases
+
 #pwDb = PasswordDB(flag=LoginFlags.CONSOLE)  #<---- will ask for a password from console
 # if you want to test your code in ide you should pass ideEnvironment=True
+
 #pwDb = PasswordDB(flag=LoginFlags.CONSOLE,ideEnvironment=True)
 # password will be visible in console but it will work.
+
 # in normal use case getpass will be use by default to input password
 #pwDb = PasswordDB(flag=LoginFlags.GUI)      #<---- will ask for a password from PyQt5 GUI
-
-
 ```
 
 <span id="anchor-1"></span>Technologies
