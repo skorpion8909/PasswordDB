@@ -46,13 +46,12 @@ class AccountManager:
         return self.accountSet
 #----------------------------------------------------------------------------------------------------------------
     def addAccount(self,accountObj):
-        readBefore = len(self.accountSet)
         if accountObj in self.accountSet:
             print("Removing old acc with that name and saving a new one")
             self.removeAccount(accountObj)
         self.accountSet.add(accountObj)
 
-        if len(self.accountSet) != readBefore and self.autoSave == True:
+        if self.autoSave == True:
             self.fileManager.saveAccount(accountObj)
 #----------------------------------------------------------------------------------------------------------------
     def setAutoSave(self, boolValue):

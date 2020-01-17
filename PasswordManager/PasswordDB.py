@@ -13,9 +13,8 @@ from PasswordManager.Account import Fields, Account, getFieldsList
 from PasswordManager.AccountManager import AccountManager
 from PasswordManager.AddAccountFrame import AddAccountFrame,GuiPasswordWindow
 from PasswordManager.LoginFlags import LoginFlags
+from PasswordManager.FilePathWindow import FilePathWindow
 from PyQt5.QtWidgets import QApplication
-from getpass import getpass
-import atexit
 import sys
 from getpass import getpass
 #import logging
@@ -39,7 +38,8 @@ class PasswordDB:
     This is a main class for this module. Only this module should be used directly.
     Rest of classes from this module will not work alone properly.
     """
-    def __init__(self,password=None,pathToDbFile=None,fullInit=True,flag=None,ideEnvironment=False):
+    def __init__(self,password=None,pathToDbFile=None,fullInit=True,flag=None,ideEnvironment=False, debug=False):
+        self.debug = debug
         if flag == LoginFlags.CONSOLE:
             if ideEnvironment:
                 # getpass does not work well in some ide
@@ -60,7 +60,7 @@ class PasswordDB:
         # init main objects and values
         self.saveFile = True  # if True then auto saves to file any added account
         self.cryptoManager = CryptoManager(password)  # class for managing encryption part
-        self.fileManager = FileManager(pathToDbFile, self.cryptoManager)  # layer for file I/O operation
+        self.fileManager = FileManager(pathToDbFile, self.cryptoManager,debug=self.debug)  # layer for file I/O operation
         self.accountManager = AccountManager(self.fileManager)  # class that manages accounts
         self.accountManager.setAutoSave(self.saveFile)
         # if num of lines is more then 0
@@ -104,7 +104,6 @@ class PasswordDB:
 #----------------------------------------------------------------------------------------------------------------
 def openAddAccountGUI(accName = ""):
     app = QApplication.instance()
-
     if app is None:
         app = QApplication(sys.argv)
         addAccFrame = AddAccountFrame(accName)
@@ -112,18 +111,27 @@ def openAddAccountGUI(accName = ""):
         app.exit()
     else:
         addAccFrame = AddAccountFrame(accName)
-        app.exec()
+        app.exit()
     return addAccFrame
 #----------------------------------------------------------------------------------------------------------------
-
 def getPasswordFromGui():
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
     if app is None:
+        app = QApplication(sys.argv)
         gui = GuiPasswordWindow()
         app.exec()
         app.exit()
     else:
         gui = GuiPasswordWindow()
         app.exec()
-
     return gui.getPassword()
+#----------------------------------------------------------------------------------------------------------------
+def getFilePathGui():
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
+        gui = FilePathWindow()
+    else:
+        gui = FilePathWindow()
+
+    return gui.getFilePath()

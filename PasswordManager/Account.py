@@ -6,6 +6,15 @@ class Fields:
     LOGIN = "LOGIN"
     PASSWORD1 = "PASSWORD1"
     PASSWORD2 = "PASSWORD2"
+    def getFromNum(self,num):
+        if num == 0:
+            return self.NAME
+        elif num == 1:
+            return self.LOGIN
+        elif num == 2:
+            return self.PASSWORD1
+        elif num == 3:
+            self.PASSWORD2
 #----------------------------------------------------------------------------------------------------------------
 def getFieldsList():
     rv = list()
@@ -34,6 +43,20 @@ class Account:
     def getPassword2(self):
         return self.password2.getDecrypted()
 #----------------------------------------------------------------------------------------------------------------
+    def getValuesAsList(self):
+        return [self.name.getDecrypted(),self.login,self.password1,self.password2]
+#----------------------------------------------------------------------------------------------------------------
+    def changeAccountFieldValue(self,field,value):
+        if field == Fields.NAME:
+            self.name = Cipher(value)
+        elif field == Fields.LOGIN:
+            self.login = Cipher(value)
+        elif field == Fields.PASSWORD1:
+            self.password1 = Cipher(value)
+        elif field == Fields.PASSWORD2:
+            self.password2 = Cipher(value)
+        print(self)
+#----------------------------------------------------------------------------------------------------------------
     def getAsStrCsv(self):
         n = self.name.getDecrypted()
         l = self.login.getDecrypted()
@@ -52,7 +75,7 @@ class Account:
         elif Fields.PASSWORD2 == attributeValue:
             return self.password2.getDecrypted()
 
-        raise ValueError("Impossibru")
+        raise ValueError("Impossibru, filed does not exist.")
 #----------------------------------------------------------------------------------------------------------------
     def setAccountValues(self,csvLine):
         csvLine = str(csvLine)
@@ -92,11 +115,13 @@ class Account:
             return True
         else:
             return False
-
 #----------------------------------------------------------------------------------------------------------------
     def __str__(self):
         rv = self.name.getDecrypted()
         return str(rv)
+#----------------------------------------------------------------------------------------------------------------
+    def __copy__(self):
+        return Account(self.name.getDecrypted(), self.login.getDecrypted(), self.password1.getDecrypted(), self.password2.getDecrypted())
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
 

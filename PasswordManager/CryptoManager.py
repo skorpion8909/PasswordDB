@@ -35,13 +35,20 @@ class CryptoManager:
         """Extends value to 32 len() str """
         index = 0
         rv = ""
+        string = str(string.encode("ASCII"))
         iter = cycle(string)
         key = string[0:]
         increment = 1
         # generate a 32 size string
         while len(rv) != 32:
             nextValue = next(iter)
-            amount = (ord(key[index])) + increment
+            try:
+                amount = (ord(key[index])) + increment
+            except IndexError:
+                # case when user input only one character
+                index -= 2
+                amount = (ord(key[index])) + increment
+
             if (index + increment) > 126:
                 amount = 126
             rv += nextValue + chr(amount)
@@ -52,8 +59,6 @@ class CryptoManager:
                 increment += 1
 
             index += increment
-        else:
-            return rv
         return rv
 #----------------------------------------------------------------------------------------------------------------
     def checkAndGeneratePassword(self,mainPassword):

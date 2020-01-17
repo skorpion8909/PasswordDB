@@ -5,8 +5,11 @@ import atexit
 import sys
 from cryptography.fernet import InvalidToken
 from PasswordManager.Account import Account
+import os
+from PyQt5.QtWidgets import QMessageBox
 
 dbModulePath, _ = split(__file__)
+defaultFilePath = "myDB.pass"
 
 #----------------------------------------------------------------------------------------------------------------
 class FileManager:
@@ -14,8 +17,8 @@ class FileManager:
         FileManager is a simple class that contains all methods involved in managing
         a file.
     """
-    def __init__(self,pathToDbFile,cryptoManager):
-        self.debug = False
+    def __init__(self,pathToDbFile,cryptoManager,debug=False):
+        self.debug = debug
         self.initialPath = pathToDbFile
         #init variables
         self.cryptoManager = cryptoManager          # type: CryptoManager
@@ -64,7 +67,7 @@ class FileManager:
 #----------------------------------------------------------------------------------------------------------------
     def initStandardValues(self):
         # default file name is
-        self.fileName = "myDB.pass"
+        self.fileName = defaultFilePath
         # default file location is
         self.dbDirectory = dbModulePath
         # path to a file
@@ -78,7 +81,10 @@ class FileManager:
         """
         directory, fileName = split(path)
         if self.debug:
-            print(directory,"<-- file directory")
+            if len(directory) != 0:
+                print(directory,"<-- file directory")
+            else:
+                print(os.getcwd(),"<-- file directory")
             print(fileName,"<-- file name")
         return directory, fileName
 #---------------------------------------------------------------------------------------------------------------
@@ -93,7 +99,6 @@ class FileManager:
 #----------------------------------------------------------------------------------------------------------------
     def closeAtExit(self):
         atexit.register(self.closeFile)
-
 #----------------------------------------------------------------------------------------------------------------
     def closeFile(self):
         try:
@@ -101,7 +106,6 @@ class FileManager:
         except Exception as e:
             print("Exception while closing a file")
             print(e)
-
 #----------------------------------------------------------------------------------------------------------------
     def loadFile(self):
         fileExist = os.path.isfile(self.pathToFile)
@@ -119,7 +123,6 @@ class FileManager:
 
         for encryptedLine in self.dbFile.readlines():
             self.fileRawContentAsList.append(encryptedLine)
-
 #----------------------------------------------------------------------------------------------------------------
     def createDbFile(self):
         self.dbFile = open(file=self.pathToFile, mode="w+", encoding="ASCII")
@@ -144,13 +147,12 @@ class FileManager:
         toSave = string+"\n"
         self.fileRawContentAsList.append(toSave)
         self.dbFile.write(toSave)
+        self.dbFile.flush()
         print("Saved in file ", toSave)
 #----------------------------------------------------------------------------------------------------------------
     def emptyDbFile(self):
-        pathToFile = self.getFileFullPath()
-        self.closeFile()
-        os.remove(pathToFile)
-        self.dbFile = open(file=pathToFile, mode="w+", encoding="ASCII")
+        self.dbFile.seek(0)
+        self.dbFile.truncate()
 #----------------------------------------------------------------------------------------------------------------
     def prepareToResave(self,accSet):
         self.fileRawContentAsList = list(filter(lambda x: Account().setAccountValues(self.decryptLine(x)) not in accSet,self.fileRawContentAsList))
@@ -168,3 +170,5 @@ class FileManager:
         for line in self.fileRawContentAsList:
             print(Account().setAccountValues(self.decryptLine(line)))
         self.dbFile.writelines(self.fileRawContentAsList)
+
+

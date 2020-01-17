@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QApplication
-from win32api import GetSystemMetrics
 
 
 def center(windowObj):

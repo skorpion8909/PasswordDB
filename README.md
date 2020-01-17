@@ -7,8 +7,6 @@ Encrypted credentials manager
 
 This is a simple project that I wrote for myself to have some of my credentials store safely.
 
-Current version is not well tested and some function is still missing for example deleting any account.
-
 
 <span id="anchor"></span>Simple use case example
 ---------------------------------------------
@@ -32,7 +30,7 @@ pwDb.setAutoSave(True)
 newAcc = Account("name","login","password1","password2") # second password is optional
 
 # adding account to memory and file
-# if identical credentials where provided(e.g. while loading) acc will not be saved
+# if identical credentials where provided(e.g. while loading) acc will be replaced
 pwDb.addAccount(newAcc)
 
 # a way for getting account object from core object
@@ -40,6 +38,10 @@ acc = pwDb.getAccount("name")
 print(acc)
 # getting decrypted value
 print(acc.getDecryptedAttribute(Fields.LOGIN),"<--- login name")
+# or
+print(acc.getLogin())
+print(acc.getPassword1())
+print(acc.getPassword2())
 
 # removing account
 pwDb.removeAccount(acc)
@@ -88,8 +90,9 @@ TO-DO list:
 
 -    [X] More tests
 -    [X] Delete account function
--    [ ] Change login/password function
+-    [X] Change login/password function
 -    [X] Api for console and GUI password entry
+-    [ ] Make Gui more beautiful
 -    [ ] Improve safety by double encryption
 
 <span id="anchor-4"></span>Status

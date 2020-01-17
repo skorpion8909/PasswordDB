@@ -1,16 +1,18 @@
 from PyQt5 import QtGui,QtCore
-from PyQt5.QtWidgets import QFrame, QLabel, QGridLayout, QLineEdit, QPushButton, QCheckBox, QSizePolicy, QWidget,QLayout,QApplication,QAction
+from PyQt5.QtWidgets import QFrame, QLabel, QGridLayout, QLineEdit, QPushButton, QCheckBox, QSizePolicy, QWidget,QLayout,QApplication,QAction,QDialog,QMessageBox
 from PasswordManager.GeneralFunctions import center
 from PasswordManager.Account import Account
 from PasswordManager.States import States
 from PasswordManager.Cipher import Cipher
 from PasswordManager.States import States
+import sys
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class AddAccountFrame(QWidget):
-    def __init__(self,accName=""):
+    def __init__(self,accName="",fun=None):
         super().__init__()
+        self.fun = fun
         self.accName = accName                   # type: NagiosConnectionManager
         self.mainGrid = QGridLayout()            # type: QGridLayout
         self.mainGrid.setSizeConstraint(QLayout.SetMinimumSize)
@@ -76,9 +78,11 @@ class AddAccountFrame(QWidget):
 
         self.rememberMeCheckBox = QCheckBox()
         self.rememberMeCheckBox.stateChanged.connect(lambda : self.checkBoxEvent())
+        if self.fun is not None:
+            self.rememberMeCheckBox.setEnabled(False)
 
         self.loginButton = QPushButton("Start")
-        self.loginButton.clicked.connect(lambda x: self.loginButtonClicked())
+        self.loginButton.clicked.connect(lambda x: self.startButtonClicked())
 
         self.mainGrid.addWidget(accNameLabel, 0, 0)
         self.mainGrid.addWidget(self.accNameEntry, 0, 1)
@@ -110,7 +114,7 @@ class AddAccountFrame(QWidget):
             if "Start" not in self.loginButton.text():
                 self.loginButton.setText("Start")
 #---------------------------------------------------------------------------------------
-    def loginButtonClicked(self):
+    def startButtonClicked(self):
         if self.rememberMeCheckBox.checkState():
             if len(self.passwordDBPasswordEntry.text()) == 0:
                 self.loginButton.setText("PasswordDB field cannot be empty!")
@@ -122,7 +126,8 @@ class AddAccountFrame(QWidget):
         self.state = States.OK
         self.password = Cipher(self.passwordDBPasswordEntry.text())
         self.account = Account(self.accNameEntry.text(),self.loginEntry.text(),self.passwordEntry1.text(),self.passwordEntry2.text())
-
+        if self.fun is not None:
+            self.fun(self.getAccount())
         self.close()
 #---------------------------------------------------------------------------------------
     def getAccount(self):
@@ -166,30 +171,51 @@ class AddAccountFrame(QWidget):
 #---------------------------------------------------------------------------------------
 
 class GuiPasswordWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setGeometry(150,150,150,100)
-        label = QLabel("Enter Password")
-        font = label.font()
+    def __init__(self,parent = None):
+        super(GuiPasswordWindow,self).__init__(parent=parent)
+        self.setGeometry(150,150,250,130)
+        self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
+        self.label = QLabel("Enter Password")
+        font = self.label.font()
         font.setPointSize(16)
-        label.setFont(font)
-
+        self.label.setFont(font)
         self.password = QLineEdit()
+        self.password.textChanged.connect(self.myEditLineTextChanged)
         self.password.setEchoMode(QLineEdit.Password)
         self.okButton = QPushButton("Ok")
         self.okButton.clicked.connect(lambda x : self.enter())
+        self.okButton.setEnabled(False)
+        self.okButtonClicked = False
         self.password.returnPressed.connect(self.okButton.click)
         layout = QGridLayout()
-        layout.addWidget(label,0,0,QtCore.Qt.AlignCenter)
+        layout.addWidget(self.label,0,0,QtCore.Qt.AlignCenter)
         layout.addWidget(self.password,1,0,QtCore.Qt.AlignTop)
         layout.addWidget(self.okButton,2,0,QtCore.Qt.AlignTop)
         self.setLayout(layout)
         center(self)
         self.show()
-
+#---------------------------------------------------------------------------------------
+    def myEditLineTextChanged(self,text):
+        textLenght = len(text)
+        print(textLenght)
+        if textLenght > 0 and textLenght <= 32:
+            if not self.okButton.isEnabled():
+                if self.label.text() not in "Enter Password":
+                    self.label.setText(f"Enter Password")
+                self.okButton.setEnabled(True)
+        else:
+            self.label.setText(f"MAX 32 chars MIN 1 char!\nYou entered {textLenght}")
+            if self.okButton.isEnabled():
+                self.okButton.setEnabled(False)
+#---------------------------------------------------------------------------------------
+    def closeEvent(self, event):
+        if not self.okButtonClicked:
+            print("X(close) button pressed")
+            sys.exit(0)
 #---------------------------------------------------------------------------------------
     def getPassword(self):
         return self.password.text()
 #---------------------------------------------------------------------------------------
     def enter(self):
+        self.okButtonClicked = True
         self.close()
