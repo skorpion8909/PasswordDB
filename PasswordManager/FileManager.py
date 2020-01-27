@@ -9,8 +9,8 @@ import os
 from PyQt5.QtWidgets import QMessageBox
 
 dbModulePath, _ = split(__file__)
-defaultFilePath = "myDB.pass"
-
+defaultFileName = "myDB.pass"
+defaultFilePath = os.path.normpath(os.path.join(dbModulePath,defaultFileName))
 #----------------------------------------------------------------------------------------------------------------
 class FileManager:
     """
