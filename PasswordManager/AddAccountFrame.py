@@ -10,9 +10,10 @@ import sys
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class AddAccountFrame(QWidget):
-    def __init__(self,accName="",fun=None):
+    def __init__(self,accName="",fun=None,currentAccList=None):
         super().__init__()
         self.fun = fun
+        self.currentAccList = currentAccList
         self.accName = accName                   # type: NagiosConnectionManager
         self.mainGrid = QGridLayout()            # type: QGridLayout
         self.mainGrid.setSizeConstraint(QLayout.SetMinimumSize)
@@ -57,6 +58,7 @@ class AddAccountFrame(QWidget):
 
         self.accNameEntry = QLineEdit(self.accName)
         self.accNameEntry.setPlaceholderText("not optional")
+        self.accNameEntry.textChanged.connect(self.nameEntryChanged)
 
         if len(self.accName) != 0:
             self.accNameEntry.setEnabled(False)
@@ -97,6 +99,17 @@ class AddAccountFrame(QWidget):
         self.mainGrid.addWidget(self.loginButton,5,0,2,2)
 
 #---------------------------------------------------------------------------------------
+    def nameEntryChanged(self,text):
+        if self.currentAccList is not None:
+            if True in [True if text == x else False for x in self.currentAccList]:
+                self.loginButton.setEnabled(False)
+                self.loginButton.setText("Account with this name already exist.")
+            else:
+                if not self.loginButton.isEnabled():
+                    self.loginButton.setEnabled(True)
+                    self.loginButton.setText("Start")
+
+    #---------------------------------------------------------------------------------------
     def checkBoxEvent(self):
         if self.rememberMeCheckBox.checkState():
             self.resize(self.wSize, (self.hSize+30))

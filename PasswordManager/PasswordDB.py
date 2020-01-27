@@ -6,7 +6,7 @@ which are encrypted with a user key.
 The main class is PasswordDB. Only this class should be used directly.
 Rest of classes from this module may not work properly alone.
 """
-# Python 3.7.2
+# Python 3.8.1
 from PasswordManager.CryptoManager import CryptoManager
 from PasswordManager.FileManager import FileManager
 from PasswordManager.Account import Fields, Account, getFieldsList
@@ -20,8 +20,6 @@ from getpass import getpass
 #import logging
 
 # try to install necessary libraries
-# TODO:Gui password managing interface
-# TODO: Does not allow acc with the same name
 # try:
 #     from PyQt5 import *
 # except Exception:

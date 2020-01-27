@@ -223,7 +223,7 @@ class PasswordManagerMainGUI(QMainWindow):
         self.state = States.CLOSE
 #---------------------------------------------------------------------------------------
     def addAccountAction(self):
-        AddAccountFrame(fun=self.table.saveAccToFileAndUpdateTable)
+        AddAccountFrame(fun=self.table.saveAccToFileAndUpdateTable,currentAccList=self.table.accNameHelpList)
 #---------------------------------------------------------------------------------------
     def addMenuBar(self):
         self.menuBar = QMenuBar()
