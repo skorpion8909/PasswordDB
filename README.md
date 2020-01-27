@@ -57,7 +57,7 @@ print(getFieldsList())
 #Flag cases
 
 #pwDb = PasswordDB(flag=LoginFlags.CONSOLE)  #<---- will ask for a password from console
-# if you want to test your code in ide you should pass ideEnvironment=True
+# if getpass does not work in your ide, pass --> ideEnvironment=True
 
 #pwDb = PasswordDB(flag=LoginFlags.CONSOLE,ideEnvironment=True)
 # password will be visible in console but it will work.
