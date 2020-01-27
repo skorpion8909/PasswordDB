@@ -22,14 +22,25 @@ class FilePathWindow(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         center(self)
-        buttonReply = QMessageBox.question(self, "Path to file",'Do you want to use default path?',QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        buttonReply = QMessageBox.question(self, "Path to file",'Do you want to use different then default file path location?',QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if buttonReply == QMessageBox.Yes:
             self.openDialogBox()
         else:
             if os.path.exists(self.configFileName):
                 with open(self.configFileName,"r") as file:
-                    path = file.readlines()[0].split("=")[1].strip(" ")
-                    self.filePath = path
+                    try:
+                        path = file.readlines()[0].split("=")[1].strip(" ")
+                        self.filePath = path
+                    except Exception as e:
+                        print(e)
+                        print("Something wrong with "+self.configFileName+" file.")
+                        print("Removing file...")
+                        file.close()
+                        os.remove(self.configFileName)
+                        if os.path.exists(self.configFileName):
+                            print("File was not removed.")
+                        else:
+                            print("File removed correctly.")
 #---------------------------------------------------------------------------------------
     def openDialogBox(self):
         userInput = QFileDialog()

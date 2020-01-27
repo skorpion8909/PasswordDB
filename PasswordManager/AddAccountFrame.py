@@ -210,7 +210,6 @@ class GuiPasswordWindow(QWidget):
 #---------------------------------------------------------------------------------------
     def myEditLineTextChanged(self,text):
         textLenght = len(text)
-        print(textLenght)
         if textLenght > 0 and textLenght <= 32:
             if not self.okButton.isEnabled():
                 if self.label.text() not in "Enter Password":
