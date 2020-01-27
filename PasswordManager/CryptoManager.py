@@ -87,7 +87,6 @@ class CryptoManager:
 
 #----------------------------------------------------------------------------------------------------------------
     def decryptLine(self,line):
-        print(line)
         toReturn = ""
         try:
             for element in line.split(","):
