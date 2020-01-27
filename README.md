@@ -23,8 +23,8 @@ testFilePath = 'testFile.pass'
 # pathToDbFile= *args can be use to change that
 pwDb = PasswordDB("H2",pathToDbFile=testFilePath)   # takes password as argument max 32 chars
 
-# set save to True to allow saving credentials in a file
-pwDb.setAutoSave(True)
+# set save to false to disable saving credentials in a file
+pwDb.setAutoSave(False)
 
 # creating any account
 newAcc = Account("name","login","password1","password2") # second password is optional
