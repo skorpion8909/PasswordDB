@@ -4,6 +4,7 @@ from PasswordManager.GeneralFunctions import center
 from PasswordManager.States import States
 from PasswordManager.PasswordManagerMainGUI import PasswordManagerMainGUI
 from PasswordManager.PasswordDB import getFilePathGui,getPasswordFromGui
+from PasswordManager.FileManager import defaultFilePath
 import sys
 
 #---------------------------------------------------------------------------------------

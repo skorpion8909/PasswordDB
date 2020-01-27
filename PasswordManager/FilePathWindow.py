@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QMessageBox, QInputDialog, QLineEdit, QFile
 from PasswordManager.GeneralFunctions import center
 from PasswordManager.FileManager import defaultFilePath
 from PyQt5.QtWidgets import QApplication
+import os
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class FilePathWindow(QWidget):
@@ -9,6 +10,7 @@ class FilePathWindow(QWidget):
         super().__init__()
         self.filePath = defaultFilePath
         self.title = 'Path chooser'
+        self.configFileName = "passConf.conf"
         self.left = 10
         self.top = 10
         self.width = 320
@@ -23,13 +25,24 @@ class FilePathWindow(QWidget):
         buttonReply = QMessageBox.question(self, "Path to file",'Do you want to use default path?',QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if buttonReply == QMessageBox.Yes:
             self.openDialogBox()
+        else:
+            if os.path.exists(self.configFileName):
+                with open(self.configFileName,"r") as file:
+                    path = file.readlines()[0].split("=")[1].strip(" ")
+                    self.filePath = path
 #---------------------------------------------------------------------------------------
     def openDialogBox(self):
         userInput = QFileDialog()
         userInput.setFileMode(QFileDialog.ExistingFile)
         userInput = userInput.getOpenFileName(self, "Select Directory")[0]
+
         if len(userInput) > 0:
             self.filePath = userInput
+            if os.path.exists(self.configFileName):
+                os.remove(self.configFileName)
+            with open(self.configFileName, "w+") as file:
+                toWr = "myDB.pass-path = "+self.filePath.strip(" ")
+                file.write(toWr)
 #---------------------------------------------------------------------------------------
     def getFilePath(self):
         return self.filePath
