@@ -46,6 +46,16 @@ class Account:
     def getValuesAsList(self):
         return [self.name.getDecrypted(),self.login,self.password1,self.password2]
 #----------------------------------------------------------------------------------------------------------------
+    def getValueByField(self,field):
+        if field == Fields.NAME:
+            return self.name.getDecrypted()
+        elif field == Fields.LOGIN:
+            return self.login.getDecrypted()
+        elif field == Fields.PASSWORD1:
+            return self.password1.getDecrypted()
+        elif field == Fields.PASSWORD2:
+            return self.password2.getDecrypted()
+#----------------------------------------------------------------------------------------------------------------
     def changeAccountFieldValue(self,field,value):
         if field == Fields.NAME:
             self.name = Cipher(value)

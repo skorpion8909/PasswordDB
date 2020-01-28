@@ -26,6 +26,9 @@ class VisibilityDelegate(QStyledItemDelegate,QItemDelegate):
         super().initStyleOption(option, index)
         if not index.data(self.visibilityRole) and index.column() > 0:
             option.text = "*" * len(option.text)
+    # def editorEvent(self, QEvent, QAbstractItemModel, QStyleOptionViewItem, QModelIndex):
+    #     super().editorEvent(QEvent, QAbstractItemModel, QStyleOptionViewItem, QModelIndex)
+    #     return False
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class TableWidget(QTableWidget):
@@ -42,8 +45,9 @@ class TableWidget(QTableWidget):
         self.accNameHelpList = None
         self.dataChangeCancelation = False
         self.sideTask = None
-        self.setItemDelegate(delegate)
+        self.showPassword = None
         self.visibility_index = QtCore.QModelIndex()
+        self.setItemDelegate(delegate)
         self.pressed.connect(self.on_pressed)
 #---------------------------------------------------------------------------------------
     def setDeleteConfirmation(self,deleteConfirmation):
@@ -111,9 +115,12 @@ class TableWidget(QTableWidget):
             for val in acc.getValuesAsList():
                 if isinstance(val,Cipher):
                     val = val.getDecrypted()
+                    if not self.showPassword.isChecked():
+                        val = "*"*len(val)
                 else:
                     self.accNameHelpList.append(val)
                 item = MyQTableWidgetItem(val)
+
                 self.setItem(x,y,item)
                 y += 1
             x += 1
@@ -162,6 +169,24 @@ class TableWidget(QTableWidget):
         if updateTable:
             self.allowDataEdition = False
             self.setTableValues()
+    def hideTableValue(self):
+        self.allowDataEdition = False
+        for column in range(0,self.rowCount()):
+            for row in range(1,4):
+                item = self.item(column,row)
+                item = MyQTableWidgetItem("*"*len(item.data(0)))
+                self.setItem(column,row,item)
+        self.allowDataEdition = True
+#---------------------------------------------------------------------------------------
+    def showTableValue(self):
+        self.allowDataEdition = False
+        for row in range(0,self.rowCount()):
+            name = self.item(row,0).data(0)
+            acc = self.pwDB.getAccount(name)
+            for column in range(1,4):
+                item = MyQTableWidgetItem(acc.getValueByField(Fields().getFromNum(row)))
+                self.setItem(row,column,item)
+        self.allowDataEdition = True
 #---------------------------------------------------------------------------------------
     def deleteConfirmationWindow(self,accName):
         if not self.deleteConfirmation:
@@ -241,7 +266,18 @@ class PasswordManagerMainGUI(QMainWindow):
         self.removeAccountAction.triggered.connect(self.setDeleteConfirmationVal)
         self.options.addAction(self.removeAccountAction)
 
+        self.showPasswordOption = QAction("Show data on edit", self, checkable=True)
+        self.showPasswordOption.setChecked(False)
+        self.showPasswordOption.triggered.connect(self.showDataOnEdit)
+        self.options.addAction(self.showPasswordOption)
+
         self.setMenuBar(self.menuBar)
+#---------------------------------------------------------------------------------------
+    def showDataOnEdit(self):
+        if self.showPasswordOption.isChecked():
+            self.table.showTableValue()
+        else:
+            self.table.hideTableValue()
 #---------------------------------------------------------------------------------------
     def changeMainPassword(self):
         password = NewPassword()
@@ -260,12 +296,14 @@ class PasswordManagerMainGUI(QMainWindow):
     def populateGrid(self):
         self.addMenuBar()
         self.table = TableWidget()
+        self.table.showPassword = self.showPasswordOption
         self.table.setPwDBObj(self.pwDB)
         self.table.setDeleteConfirmation(self.deleteConfirmationValue)
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels([x.capitalize()  for x in getFieldsList()])
         self.mainGrid.addWidget(self.table)
         self.table.setTableValues()
+        self.table.hideTableValue()
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class FileManagerSideThread(QThread):
