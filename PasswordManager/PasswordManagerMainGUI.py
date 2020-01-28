@@ -303,7 +303,6 @@ class PasswordManagerMainGUI(QMainWindow):
         self.table.setHorizontalHeaderLabels([x.capitalize()  for x in getFieldsList()])
         self.mainGrid.addWidget(self.table)
         self.table.setTableValues()
-        self.table.hideTableValue()
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class FileManagerSideThread(QThread):
