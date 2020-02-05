@@ -26,76 +26,104 @@ class VisibilityDelegate(QStyledItemDelegate,QItemDelegate):
         super().initStyleOption(option, index)
         if not index.data(self.visibilityRole) and index.column() > 0:
             option.text = "*" * len(option.text)
-    # def editorEvent(self, QEvent, QAbstractItemModel, QStyleOptionViewItem, QModelIndex):
-    #     super().editorEvent(QEvent, QAbstractItemModel, QStyleOptionViewItem, QModelIndex)
-    #     return False
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class TableWidget(QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        delegate = VisibilityDelegate(self)
+        self.delegate = VisibilityDelegate(self)
         self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.debug = False
         self.pwDB = None
         self.tableList = None
         self.allowDataEdition = False
+        self.afterInit = False
         self.dataSaved = True
         self.deleteConfirmation = None
         self.accNameHelpList = None
         self.dataChangeCancelation = False
         self.sideTask = None
         self.showPassword = None
+        self.changeConfirmed = False
+        self.allowDataChange = False
         self.visibility_index = QtCore.QModelIndex()
-        self.setItemDelegate(delegate)
+        self.setItemDelegate(self.delegate)
         self.pressed.connect(self.on_pressed)
 #---------------------------------------------------------------------------------------
     def setDeleteConfirmation(self,deleteConfirmation):
         self.deleteConfirmation = deleteConfirmation
+    def focusOutEvent(self, *args, **kwargs):
+        self.setTableValues()
 #---------------------------------------------------------------------------------------
-    def showDebug(self):
+    def editItem(self, QTableWidgetItem):
+        super(TableWidget, self).editItem(QTableWidgetItem)
+        print(QTableWidgetItem)
+    def showDebug(self,args):
         if self.debug:
+            try:
+                row = args[0].row()
+                col = args[0].column()
+                print(row,col)
+            except Exception:
+                pass
             print(inspect.stack()[1][3])
 #---------------------------------------------------------------------------------------
     def dataChanged(self, *args, **kwargs):
-        self.showDebug()
+        self.showDebug(args)
         if self.allowDataEdition:
-            row = args[0].row()
-            col = args[0].column()
-            newValue = args[0].data()
-            accOldName = self.accNameHelpList[row]
-            if col == 0:
-                if self.dataChangeCancelation:
-                    self.dataChangeCancelation = False
-                    return None
-                else:
-                    if newValue in self.accNameHelpList:
-                        QMessageBox.information(self,"Error","Account with that name already exists.")
-                        self.dataChangeCancelation = True
-                        item = MyQTableWidgetItem(accOldName)
-                        self.setItem(row, col, item)
+            if self.changeConfirmed:
+                self.changeConfirmed = False
+                row = args[0].row()
+                col = args[0].column()
+                newValue = args[0].data()
+                accOldName = self.accNameHelpList[row]
+                if col == 0:
+                    if self.dataChangeCancelation:
+                        self.dataChangeCancelation = False
                         return None
-                    self.allowDataEdition = False
+                    else:
+                        if newValue in self.accNameHelpList:
+                            QMessageBox.information(self,"Error","Account with that name already exists.")
+                            self.dataChangeCancelation = True
+                            item = MyQTableWidgetItem(accOldName)
+                            self.setTableItem(newValue, col, row)
+                            return None
+                        self.allowDataEdition = False
+                        oldAcc = self.pwDB.getAccount(accOldName)
+                        newAcc = oldAcc.__copy__()
+                        newAcc.changeAccountFieldValue(Fields.NAME,newValue)
+                        self.removeAndAddAcc(oldAcc,newAcc)
+                else:
                     oldAcc = self.pwDB.getAccount(accOldName)
-                    newAcc = oldAcc.__copy__()
-                    newAcc.changeAccountFieldValue(Fields.NAME,newValue)
-                    self.removeAndAddAcc(oldAcc,newAcc)
+                    self.removeAccAndUpdateTable(oldAcc,updateTable=False)
+                    oldAcc.changeAccountFieldValue(Fields.getFromNum(col),newValue)
+                    self.saveAccToFileAndUpdateTable(oldAcc,updateTable=False)
+                    self.setTableItem(newValue,col,row)
             else:
-                oldAcc = self.pwDB.getAccount(accOldName)
-                self.removeAccAndUpdateTable(oldAcc,updateTable=False)
-                oldAcc.changeAccountFieldValue(Fields().getFromNum(col),newValue)
-                self.saveAccToFileAndUpdateTable(oldAcc)
-
+                row = args[0].row()
+                col = args[0].column()
+                accOldName = self.accNameHelpList[row]
+                oldVal = self.pwDB.getAccount(accOldName) # type:Account
+                oldVal = oldVal.getValueByField(Fields.getFromNum(col))
+                self.allowDataEdition = False
+                self.setTableItem(oldVal,col,row)
 #---------------------------------------------------------------------------------------
+    def setTableItem(self, val, col, row):
+        if col != 0 and not self.showPassword.isChecked():
+            val = "*" * len(val)
+
+        item = MyQTableWidgetItem(val)
+        print(col,row,val)
+        self.setItem(row, col, item)
     def removeAndAddAccTask(self,oldAcc,newAcc):
-        self.showDebug()
+        self.showDebug(self)
         try:
             self.removeAccAndUpdateTable(oldAcc, updateTable=False)
             self.saveAccToFileAndUpdateTable(newAcc)
         except Exception as e:
             print(e)
     def removeAndAddAcc(self, oldAcc, newAcc):
-        self.showDebug()
+        self.showDebug(self)
         try:
             while self.sideTask is not None and self.sideTask.isRunning():
                 time.sleep(0.250)
@@ -106,7 +134,7 @@ class TableWidget(QTableWidget):
             print(e)
 #---------------------------------------------------------------------------------------
     def setTableValues(self):
-        self.showDebug()
+        self.showDebug(self)
         self.setRowCount(len(self.tableList))
         self.accNameHelpList = []
         x = 0
@@ -137,8 +165,8 @@ class TableWidget(QTableWidget):
         super(TableWidget,self).mousePressEvent(event)
 #---------------------------------------------------------------------------------------
     def mouseReleaseEvent(self, event):
-        self.allowDataEdition = True
         super(TableWidget,self).mouseReleaseEvent(event)
+        self.allowDataEdition = True
 #---------------------------------------------------------------------------------------
     def keyPressEvent(self,event):
         super(TableWidget, self).keyPressEvent(event)
@@ -149,26 +177,27 @@ class TableWidget(QTableWidget):
                 if self.deleteConfirmationWindow(accName):
                     acc = self.pwDB.getAccount(accName)
                     self.removeAccAndUpdateTable(acc)
-        # elif event.key() == QtCore.Qt.Key_Enter or event.key() == 16777220: # 16777220 basic enter
+        elif event.key() == QtCore.Qt.Key_Enter or event.key() == 16777220: # 16777220 basic enter
+            self.changeConfirmed = True
 #---------------------------------------------------------------------------------------
     def removeAccAndUpdateTable(self, acc, updateTable = True):
-        self.showDebug()
+        self.showDebug(self)
         sideTask = FileManagerSideThread(task=self.pwDB.removeAccount, taskVal=acc, parent=self)
         sideTask.start()
         sideTask.wait(5)
         if updateTable:
             self.allowDataEdition = False
             self.setTableValues()
-
 #---------------------------------------------------------------------------------------
     def saveAccToFileAndUpdateTable(self, acc, updateTable=True):
-        self.showDebug()
+        self.showDebug(self)
         sideTask = FileManagerSideThread(task=self.pwDB.addAccount, taskVal=acc, parent=self)
         sideTask.start()
         sideTask.wait(5)
         if updateTable:
             self.allowDataEdition = False
             self.setTableValues()
+#---------------------------------------------------------------------------------------
     def hideTableValue(self):
         self.allowDataEdition = False
         for column in range(0,self.rowCount()):
@@ -183,9 +212,9 @@ class TableWidget(QTableWidget):
         for row in range(0,self.rowCount()):
             name = self.item(row,0).data(0)
             acc = self.pwDB.getAccount(name)
-            for column in range(1,4):
-                item = MyQTableWidgetItem(acc.getValueByField(Fields().getFromNum(row)))
-                self.setItem(row,column,item)
+            for col in range(1,4):
+                item = MyQTableWidgetItem(acc.getValueByField(Fields.getFromNum(col)))
+                self.setItem(row,col,item)
         self.allowDataEdition = True
 #---------------------------------------------------------------------------------------
     def deleteConfirmationWindow(self,accName):
@@ -210,7 +239,7 @@ class TableWidget(QTableWidget):
 class PasswordManagerMainGUI(QMainWindow):
     def __init__(self,password, filePath):
         super().__init__()
-        self.pwDB = PasswordDB(password=password,pathToDbFile=filePath,debug=True)
+        self.pwDB = PasswordDB(password=password,pathToDbFile=filePath,debug=False)
         self.setCentralWidgetWindow()
         self.mainGrid = QVBoxLayout()            # type: QGridLayout
         # self.hSize = 400
@@ -227,6 +256,7 @@ class PasswordManagerMainGUI(QMainWindow):
         self.centralWindow.setLayout(self.mainGrid)
         self.setCentralWidget(self.centralWindow)
         self.table.allowDataEdition = True
+        self.table.afterInit = True
         self.state = States.UNDEFINE
 
         center(self)
@@ -303,6 +333,7 @@ class PasswordManagerMainGUI(QMainWindow):
         self.table.setHorizontalHeaderLabels([x.capitalize()  for x in getFieldsList()])
         self.mainGrid.addWidget(self.table)
         self.table.setTableValues()
+        self.table.hideTableValue()
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 class FileManagerSideThread(QThread):

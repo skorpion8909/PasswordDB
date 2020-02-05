@@ -6,15 +6,16 @@ class Fields:
     LOGIN = "LOGIN"
     PASSWORD1 = "PASSWORD1"
     PASSWORD2 = "PASSWORD2"
-    def getFromNum(self,num):
+    @staticmethod
+    def getFromNum(num):
         if num == 0:
-            return self.NAME
+            return Fields.NAME
         elif num == 1:
-            return self.LOGIN
+            return Fields.LOGIN
         elif num == 2:
-            return self.PASSWORD1
+            return Fields.PASSWORD1
         elif num == 3:
-            self.PASSWORD2
+            return Fields.PASSWORD2
 #----------------------------------------------------------------------------------------------------------------
 def getFieldsList():
     rv = list()
